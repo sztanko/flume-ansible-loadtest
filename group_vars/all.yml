@@ -1,0 +1,71 @@
+user: dsztanko
+install:
+    download_url: http://apache.mirror.anlx.net/flume/1.6.0
+    tar: apache-flume-1.6.0-bin
+    dir: /local/tmp/flume_bin
+    proxy: proxy.mlan:3128
+tmp: /local/tmp/flume
+props:
+    filechannel:
+        checkpointDir: "{{tmp}}/chk"
+        dataDirs: "{{tmp}}/data"
+    avro:
+        compressionType: deflate 
+
+collectors:
+    - scribe8.mlan
+        
+batch_size: 5000
+capacity: 5000000
+transactionCapacity: "{{8 * batch_size}}"
+jmx_port: 5010
+avro_port: 4545
+hdfs_batch_size: "{{8 * batch_size}}"
+monitoring_port: 34545
+num_sinks: 8
+
+flume_mem: "2G"
+flume_general_params: "-Dflume.root.logger=INFO,console -Xmx{{flume_mem}} -Dflume.monitoring.type=http -Dorg.jboss.netty.epollBugWorkaround=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dflume.root.logger=DEBUG,console" 
+layout:
+    agent:
+        source:
+            type: exec
+            command: "{{install.dir}}/seq_generator.py {{install.dir}}/rate"
+            batchSize: "{{batch_size}}"
+            rate: 55000
+        channel:
+            type: file
+            capacity: "{{capacity}}"
+            transactionCapacity: "{{transactionCapacity}}"
+        sink:
+            type: "avro"
+            threads: 15
+            batchSize: "{{transactionCapacity}}"
+            numSinks: "{{num_sinks}}"
+    collector:
+        source:
+            type: avro
+            threads: 15
+        channel:
+            type: memory
+            capacity: "{{capacity}}"
+            transactionCapacity: "{{transactionCapacity}}"
+        sink:
+            type: hdfs
+            hdfs:
+                path: /tmp/flume
+                pathFormat: "dt=%y-%m-%d/hour=%H/minute=%M"
+                rollSize: 371088630
+                fileSuffix: .gz
+                rollCount: 0
+                rollInterval: 30
+                batchSize: "{{hdfs_batch_size}}"
+                txnEventMax: "{{hdfs_batch_size}}"
+                codeC: gzip
+                fileType: CompressedStream
+                useLocalTimeStamp: "true"
+                round: "true"
+                roundUnit: second
+                callTimeout: 5000
+                rollTimerPoolSize: 5
+                

@@ -1,0 +1,5 @@
+---
+- name: flume client install
+  hosts: agents
+  roles:
+    - agent

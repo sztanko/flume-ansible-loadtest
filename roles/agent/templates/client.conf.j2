@@ -1,0 +1,42 @@
+# Global defs
+
+{{ansible_hostname}}_agent.sources = src
+{{ansible_hostname}}_agent.sinks = {% for c in collectors %}{% for i in range(layout.agent.sink.numSinks|int) %}s_{{c.replace('.', '_')}}_{{i}} {% endfor %}{% endfor %}
+
+{{ansible_hostname}}_agent.channels = ch
+{{ansible_hostname}}_agent.sinkgroups = sg
+{{ansible_hostname}}_agent.sinkgroups.sg.sinks = {% for c in collectors %}{% for i in range(layout.agent.sink.numSinks|int) %}s_{{c.replace('.', '_')}}_{{i}} {% endfor %}{% endfor %}
+
+{{ansible_hostname}}_agent.sinkgroups.sg.processor.type = load_balance
+{{ansible_hostname}}_agent.sinkgroups.sg.processor.backoff = true
+{{ansible_hostname}}_agent.sinkgroups.sg.processor.selector = round_robin
+
+
+# Source
+{{ansible_hostname}}_agent.sources.src.type = {{layout.agent.source.type}}
+{{ansible_hostname}}_agent.sources.src.command = {{layout.agent.source.command}}
+{{ansible_hostname}}_agent.sources.src.channels = ch
+{{ansible_hostname}}_agent.sources.src.batchSize = {{layout.agent.source.batchSize}}
+
+
+# Channel
+{{ansible_hostname}}_agent.channels.ch.type = {{layout.agent.channel.type}}
+{{ansible_hostname}}_agent.channels.ch.checkpointDir = {{props.filechannel.checkpointDir}}
+{{ansible_hostname}}_agent.channels.ch.dataDirs = {{props.filechannel.dataDirs}}
+{{ansible_hostname}}_agent.channels.ch.capacity = {{layout.agent.channel.capacity}}
+{{ansible_hostname}}_agent.channels.ch.transactionCapacity = {{layout.agent.channel.transactionCapacity}}
+
+# Sinks
+{% for c in collectors %}
+# Collector {{ c }}
+{% for i in range(layout.agent.sink.numSinks|int) %}
+# Sink {{ i }}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.type = {{layout.agent.sink.type}}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.channel = ch
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.hostname = {{c}}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.port = {{ avro_port + i }}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.batch-size = {{layout.agent.sink.batchSize}}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.threads = {{layout.agent.sink.threads}}
+{{ansible_hostname}}_agent.sinks.s_{{c.replace('.', '_')}}_{{i}}.compression-type = {{props.avro.compressionType}}
+{% endfor %}
+{% endfor %}

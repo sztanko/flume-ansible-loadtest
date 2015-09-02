@@ -1,0 +1,7 @@
+---
+- name: flume client install
+  hosts: agents
+  tasks:
+    - name: Write rate to the rate file
+      shell: echo {{layout.agent.source.rate}} > {{install.dir}}/rate
+

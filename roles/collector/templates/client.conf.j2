@@ -1,0 +1,39 @@
+# Global defs
+{% for i in range(layout.agent.sink.numSinks|int) %}
+
+{{ansible_hostname}}_{{i}}_collector.sources = src
+{{ansible_hostname}}_{{i}}_collector.sinks = snk
+
+{{ansible_hostname}}_{{i}}_collector.channels = ch
+
+# Source
+{{ansible_hostname}}_{{i}}_collector.sources.src.type = {{layout.collector.source.type}}
+{{ansible_hostname}}_{{i}}_collector.sources.src.channels = ch
+{{ansible_hostname}}_{{i}}_collector.sources.src.bind = 0.0.0.0
+{{ansible_hostname}}_{{i}}_collector.sources.src.port = {{avro_port + i}}
+{{ansible_hostname}}_{{i}}_collector.sources.src.threads = {{layout.collector.source.threads}}
+{{ansible_hostname}}_{{i}}_collector.sources.src.compression-type = {{props.avro.compressionType}}
+
+
+# Channel
+{{ansible_hostname}}_{{i}}_collector.channels.ch.type = {{layout.collector.channel.type}}
+{{ansible_hostname}}_{{i}}_collector.channels.ch.checkpointDir = {{props.filechannel.checkpointDir}}/{{i}}
+{{ansible_hostname}}_{{i}}_collector.channels.ch.dataDirs = {{props.filechannel.dataDirs}}/{{i}}/
+{{ansible_hostname}}_{{i}}_collector.channels.ch.capacity = {{layout.collector.channel.capacity}}
+{{ansible_hostname}}_{{i}}_collector.channels.ch.transactionCapacity = {{layout.collector.channel.transactionCapacity}}
+
+# Sinks
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.type = {{layout.collector.sink.type}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.channel = ch
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.path = {{layout.collector.sink.hdfs.path}}/{{layout.collector.sink.hdfs.pathFormat}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.filePrefix = snk_{{ansible_hostname}}_{{i}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.fileSuffix = {{layout.collector.sink.hdfs.fileSuffix}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.rollSize = {{layout.collector.sink.hdfs.rollSize}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.rollCount = {{layout.collector.sink.hdfs.rollCount}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.rollInterval = {{layout.collector.sink.hdfs.rollInterval}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.batchSize = {{layout.collector.sink.hdfs.batchSize}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.txnEventMax = {{layout.collector.sink.hdfs.txnEventMax}}
+{{ansible_hostname}}_{{i}}_collector.sinks.snk.hdfs.useLocalTimeStamp = {{layout.collector.sink.hdfs.useLocalTimeStamp}}
+
+
+{% endfor %}

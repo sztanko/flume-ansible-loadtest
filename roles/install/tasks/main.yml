@@ -1,0 +1,21 @@
+- name: cleanup delete all directories
+  file: path={{item}} state=absent
+  with_items:
+    - "{{tmp}}"
+    - "{{install.dir}}_tmp"
+    - "{{install.dir}}"
+- name: create tmp dir
+  file: path={{item}} state=directory
+  with_items:
+    - "{{tmp}}"
+    - "{{install.dir}}_tmp"
+- name: download flume
+  get_url: url={{install.download_url}}/{{install.tar}}.tar.gz dest={{tmp}}/{{install.tar}}.tar.gz
+  environment:
+    http_proxy: "{{install.proxy}}"
+- name: unzip flume
+  unarchive: src={{tmp}}/{{install.tar}}.tar.gz dest={{install.dir}}_tmp copy=no
+- name: install flume
+  command: mv {{install.dir}}_tmp/{{install.tar}} {{install.dir}}
+- name: install sequence generator script
+  copy: src=seq_generator.py dest={{install.dir}} force=yes mode=0755

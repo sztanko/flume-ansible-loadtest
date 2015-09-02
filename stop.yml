@@ -1,0 +1,13 @@
+- name: start all flume collectors
+  hosts: collectors
+  tasks:
+    - name: stop all flume collectors
+      shell: "killall -9 /usr/bin/java" 
+      ignore_errors: yes 
+- name: start all flume agents
+  hosts: agents
+  tasks:
+    - name: stop all flume agents
+      shell: "killall -9 /usr/bin/java"
+      ignore_errors: yes
+

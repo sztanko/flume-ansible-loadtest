@@ -1,0 +1,4 @@
+- name: flume client install
+  hosts: all
+  roles:
+    - install

@@ -1,0 +1,23 @@
+- name: start all flume collectors
+  hosts: collectors
+  roles:
+    - collector
+  tasks:
+    - name: stop all flume collectors
+      shell: "killall -9 /usr/bin/java" 
+      ignore_errors: yes 
+    - name: start all flume collectors
+      shell: "nohup {{install.dir}}/bin/flume-ng agent --conf {{install.dir}}/conf/ --name {{ansible_hostname}}_{{item}}_collector -f {{install.dir}}/conf/client.conf {{flume_general_params}} -Dcom.sun.management.jmxremote.port={{jmx_port + item|int }} -Dflume.monitoring.port={{monitoring_port + item|int}} &> {{install.dir}}/flume_{{item}}.log &"
+      with_sequence: start=0 end={{layout.agent.sink.numSinks}}
+
+- name: start all flume agents
+  hosts: agents
+  roles:
+    - agent
+  tasks:
+    - name: stop all flume agents
+      shell: "killall -9 /usr/bin/java"
+      ignore_errors: yes
+    - name: start all flume agents
+      shell: "nohup {{install.dir}}/bin/flume-ng agent --conf {{install.dir}}/conf/ --name {{ansible_hostname}}_agent -f {{install.dir}}/conf/client.conf {{flume_general_params}} -Dcom.sun.management.jmxremote.port=5010 -Dflume.monitoring.port={{monitoring_port}} &> {{install.dir}}/flume.log &"
+

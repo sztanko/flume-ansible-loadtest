@@ -1,0 +1,5 @@
+- name: Write rate to the rate file
+  shell: echo {{layout.agent.source.rate}} > {{install.dir}}/rate
+- name: copy client.conf
+  template: src=client.conf.j2 dest={{install.dir}}/conf/client.conf
+
